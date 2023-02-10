@@ -83,17 +83,17 @@ public class MemberDao {
 		
 		try {
 			conn = DBConnection.getConnection();
-			System.out.println("1/3 getId success");
+			System.out.println("1/3 addMember success");
 			
 			psmt = conn.prepareStatement(sql);
 			psmt.setString(1, dto.getId());
 			psmt.setString(2, dto.getPwd());
 			psmt.setString(3, dto.getName());
 			psmt.setString(4, dto.getEmail());
-			System.out.println("2/3 getId success");
+			System.out.println("2/3 addMember success");
 			
 			count = psmt.executeUpdate();
-			System.out.println("3/3 getId success");
+			System.out.println("3/3 addMember success");
 		} catch (SQLException e) {
 			System.out.println("addMember fail");
 			e.printStackTrace();
@@ -109,48 +109,47 @@ public class MemberDao {
 	
 	//로그인 정보
 	public MemberDto login(String id, String pwd) {
-		
-		String sql = " select id, name, email, auth " //id는 1번지
-				+ " from member "
-				+ " where id=? and pw=? ";
-		
-		Connection conn = null;
-		PreparedStatement psmt = null;
-		ResultSet rs = null;
-		
-		//리턴할 변수
-		MemberDto mem = null;
-		
-		
-		try {
-			conn = DBConnection.getConnection();
-			System.out.println("1/3 login success");
 			
-			psmt = conn.prepareStatement(sql);
-			psmt.setString(1, id);
-			psmt.setString(2, pwd);
-			System.out.println("2/3 login success");
+			String sql = " select id, name, email, auth "
+					+ "    from member "
+					+ "    where id=? and pwd=? ";
 			
-			rs = psmt.executeQuery();
-			System.out.println("3/3 login success");
-			if(rs.next()) {
-				String _id = rs.getString(1);
-				String _name = rs.getString(2);
-				String _email = rs.getString(3);
-				int _auth = rs.getInt(4);
+			Connection conn = null;
+			PreparedStatement psmt = null;
+			ResultSet rs = null;
+			
+			MemberDto mem = null;
+					
+			try {
+				conn = DBConnection.getConnection();
+				System.out.println("1/3 login success");
 				
-				mem = new MemberDto(_id, null, _name, _email, _auth);
+				psmt = conn.prepareStatement(sql);
+				psmt.setString(1, id);
+				psmt.setString(2, pwd);
+				System.out.println("2/3 login success");
+				
+				rs = psmt.executeQuery();
+				System.out.println("3/3 login success");
+				
+				if(rs.next()) {
+					String _id = rs.getString(1);
+					String _name = rs.getString(2);
+					String _email = rs.getString(3);
+					int _auth = rs.getInt(4);
+					
+					mem = new MemberDto(_id, null, _name, _email, _auth);
+				}
+				
+			} catch (SQLException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} finally {
+				DBClose.close(conn, psmt, rs);
 			}
-		} catch (SQLException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} finally {
-			DBClose.close(conn, psmt, rs);
+			
+			return mem;
 		}
-		
-		return mem;
-		
-	}
 	
 	
 	

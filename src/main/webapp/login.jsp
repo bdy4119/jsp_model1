@@ -12,7 +12,7 @@
 	</head>
 	<body>
 		<div class="main-container">
-			<form action="LoginAf.jsp" method="post">
+			<form action="loginAf.jsp" method="post">
 				<div>
 				<header>
 					<div align="center">
@@ -42,17 +42,16 @@
 				</div>
 			</form>
 		</div>
-		
+
 		<script type="text/javascript">
 			/*
-				cookie : id, pw저장 == String형태						client에 저장됨
-				session : 로그인한 회원에 대한 정보를 저장 == Object형태	server에 저장
+			cookie : id, pw저장 == String형태						client에 저장됨
+			session : 로그인한 회원에 대한 정보를 저장 == Object형태	server에 저장
 			*/
 			
-			let user_id = $.cookie('user_id');
-		
-			//저장한 아이디가 있을때 실행
-			if(user_id != null) {
+			let user_id = $.cookie("user_id");
+			
+			if(user_id != null){	// 저장한 id가 있음
 				$("#id").val(user_id);
 				$("#chk_save_id").prop("checked", true);
 			}
@@ -61,7 +60,6 @@
 				
 				if( $("#chk_save_id").is(":checked") == true ){
 					
-					//아이디칸이 비어있으면 실행
 					if( $("#id").val().trim() == "" ){
 						alert('id를 입력해 주십시오');
 						$("#chk_save_id").prop("checked", false);
