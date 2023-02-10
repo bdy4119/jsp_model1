@@ -1,0 +1,87 @@
+@charset "UTF-8";
+
+/* HTML전체에 적용할 가상클래스
+	-- 내가 지정한 식별자
+*/
+:root {
+	--body-background-color: #f5f6f7;
+	--font-color: #4e4e4e;
+	--border-gray-color : #dadada;
+	--naver-green-color: #04c75a;
+	--naver-green-border-color: #06b350;
+}
+
+
+* {
+	margin:0;
+	padding:0;
+}
+
+
+
+body {
+	background:var(--body-background-color);
+}
+
+
+.main-container {
+	width:100%;
+	display:flex;
+	flex-direction:column;
+	align-items:center;
+	margin-top: 21px;
+	padding-top:200;
+}
+
+
+.login-input-section-wrap {
+	padding-top: 60px;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+}
+
+
+.login-input-wrap {
+	width: 465px;
+	height :48px;
+	border: solid 1px var(	--border-gray-color );
+	background: white;
+}
+
+
+.password-wrap {
+	margin-top: 13px;
+}
+
+
+.login-input-wrap input {
+	border: none;
+	width:430px;
+	margin-top: 10px;
+	font-size: 14px;
+	margin-left: 10px;
+	height:30px;
+}
+
+
+.login-button-wrap {
+	padding-top: 13px;
+}
+
+
+.login-button-wrap button {
+	width: 465px;
+	height :48px;
+	font-size: 18px;
+	background: var(--naver-green-color);
+	color: white;
+	border: solid 1px var(--naver-green-border-color);
+}
+
+
+.login-button-wrap :hover {
+	background-color: #008040;
+}
+
+
