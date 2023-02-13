@@ -9,7 +9,7 @@
 	MemberDto login = (MemberDto)session.getAttribute("login");
 	if(login == null){
 	%>
-	<script>
+	<script type="text/javascript">
 		alert('로그인 해 주십시오');
 		location.href = "login.jsp";
 	</script>
@@ -26,9 +26,41 @@
 	</head>
 	<body>
 		<%
+		//검색
+		String choice = request.getParameter("choice");
+		String search = request.getParameter("search");
+		
+		if(choice == null) {
+			choice = "";
+		}
+		if(search == null) {
+			search = "";
+		}
+		
+		
 		Bbsdao dao = Bbsdao.getInstance();
 		
-		List<bbsDTO> list = dao.getBbsList();
+		//페이지 넘버
+		String sPageNumber = request.getParameter("pageNumber");
+		int pageNumber = 0;
+		if(sPageNumber != null && !sPageNumber.equals("")){
+			pageNumber = Integer.parseInt(sPageNumber);
+		}
+		
+	//	List<bbsDTO> list = dao.getBbsList();
+	//	List<bbsDTO> list = dao.getBbsSearchList(choice, search);
+		List<bbsDTO> list = dao.getBbsPageList(choice, search, pageNumber);
+		
+		
+		//글의 총 갯수
+		int count = dao.getAllBbs(choice, search);
+		
+		//페이지의 총 수
+		//총 글의 수를 10개씩 나눔
+		int pageBbs = count / 10;
+		if((count%10) > 0) {
+			pageBbs = pageBbs + 1;
+		}
 		%>
 	
 		<h1>게시판</h1>
@@ -71,8 +103,82 @@
 				</tbody>
 			</table>
 			<br>
+			<br>
+
+			<%
+				for(int i = 0;i < pageBbs; i++){
+					if(pageNumber == i){	// 현재 페이지
+						%>
+						<span style="font-size: 15pt;color: #0000ff;font-weight: bold;">
+							<%=i+1 %>
+						</span>
+						<%
+					}else{					// 그밖에 다른 페이지
+						%>
+						<a href="#none" title="<%=i+1 %>페이지" onclick="goPage(<%=i %>)"
+							style="font-size: 15pt; color: #000; font-weight: bold; text-decoration: none;">
+							[<%=i+1 %>]
+						</a>			
+						<%
+					}		
+				}
+			%>
+			
+			
+			<br>
+			<br>
+			<!-- 검색 -->
+			<select id="choice">
+				<option value="">검색</option>
+				<option value="title">제목</option>
+				<option value="content">내용</option>
+				<option value="writer">작성자</option>
+			</select>
+			
+			<input type="text" id="search" value="<%=search %>">
+			
+			<button type="button" onclick="searchBtn()">검색</button>
+			
+			<br>
 			<a href="bbswrite.jsp">글쓰기</a>
 		</div>
-	<script type="text/javascript"></script>
+	<script type="text/javascript">
+		
+		//자바용 변수 -> 스크립트로 넘겨받기
+		let search = "<%=search %>";
+		if(search != "") {
+			let obj = document.getElementById("choice");
+			obj.value = "<%=choice %>"; 
+			
+			//값을 넣어주면서 바꿔줘라
+			obj.setAttribute("selected", selected); 
+		}
+		
+		
+	
+		function searchBtn() {
+			let choice = document.getElementById('choice').value;
+			let search = document.getElementById('search').value;
+			
+			/* if(choice == ""){
+				alert("카테고리를 선택해 주십시오");
+				return;
+			} */
+			/* 
+			if(search.trim() == ""){
+				alert("검색어를 선택해 주십시오");
+				return;
+			} */
+			
+			location.href = "bbsList.jsp?choice=" + choice + "&search=" + search;
+		}
+		
+		function goPage( pageNumber ) {
+			let choice = document.getElementById('choice').value;
+			let search = document.getElementById('search').value;
+			
+			location.href = "bbsList.jsp?choice=" + choice + "&search=" + search + "&pageNumber=" + pageNumber;	
+		}
+	</script>
 	</body>
 </html>

@@ -77,6 +77,52 @@ public class Bbsdao {
 	}
 	
 	
+	
+	
+	//글의 총 갯수
+	public int getAllBbs(String choice, String search) {
+		
+		String sql = " select count(*) from bbs ";
+		
+		String searchSql = "";
+		if(choice.equals("title")) {
+			searchSql = " where title like '%" + search + "%'";
+		}
+		else if(choice.equals("content")) {
+			searchSql = " where content like '%" + search + "%'";
+		} 
+		else if(choice.equals("writer")) {
+			searchSql = " where id='" + search + "'"; 
+		} 
+		sql += searchSql;
+		
+		Connection conn = null;
+		PreparedStatement psmt = null;
+		ResultSet rs = null;
+		
+		int count = 0;
+		
+		try {
+			conn = DBConnection.getConnection();
+				
+			psmt = conn.prepareStatement(sql);
+			
+			rs = psmt.executeQuery();
+			if(rs.next()) {
+				count = rs.getInt(1);
+			}
+			
+		} catch (SQLException e) {			
+			e.printStackTrace();
+		} finally {
+			DBClose.close(conn, psmt, rs);
+		}
+		
+		return count;
+	}
+	
+	
+	
 	//글쓰기
 	public boolean writeBbs(bbsDTO dto) {
 		String sql = " insert into bbs(id, ref, step, depth, title, content, wdate, del, readcount)"
@@ -112,4 +158,142 @@ public class Bbsdao {
 		return count>0?true:false;
 	}
 
+			
+	//게시판 글검색
+	public List<bbsDTO> getBbsSearchList(String choice, String search) {
+			
+			String sql = " select seq, id, ref, step, depth,"
+					+ "			  title, content, wdate, del, readcount "
+					+ "    from bbs ";
+			
+			String searchSql = "";
+			if(choice.equals("title")) {
+				searchSql = " where title like '%" + search + "%'";
+			}
+			else if(choice.equals("content")) {
+				searchSql = " where content like '%" + search + "%'";
+			} 
+			else if(choice.equals("writer")) {
+				searchSql = " where id='" + search + "'"; 
+			} 
+			sql += searchSql;
+			
+			sql += "    order by ref desc, step asc ";
+			
+			Connection conn = null;
+			PreparedStatement psmt = null;
+			ResultSet rs = null;
+			
+			List<bbsDTO> list = new ArrayList<bbsDTO>();
+					
+			try {
+				conn = DBConnection.getConnection();
+				System.out.println("1/4 getBbsList success");
+				
+				psmt = conn.prepareStatement(sql);
+				System.out.println("2/4 getBbsList success");
+				
+				rs = psmt.executeQuery();
+				System.out.println("3/4 getBbsList success");
+				
+				while(rs.next()) {
+					
+					bbsDTO dto = new bbsDTO(rs.getInt(1), 
+											rs.getString(2), 
+											rs.getInt(3), 
+											rs.getInt(4), 
+											rs.getInt(5), 
+											rs.getString(6), 
+											rs.getString(7), 
+											rs.getString(8), 
+											rs.getInt(9), 
+											rs.getInt(10));
+					
+					list.add(dto);
+				}
+				System.out.println("4/4 getBbsList success");
+				
+			} catch (SQLException e) {	
+				System.out.println("getBbsList fail");
+				e.printStackTrace();
+			} finally {
+				DBClose.close(conn, psmt, rs);
+			}
+			
+			return list;		
+	}
+
+	
+	public List<bbsDTO> getBbsPageList(String choice, String search, int pageNumber) {
+		
+		String sql = " select seq, id, ref, step, depth, title, content, wdate, del, readcount "
+				+ " from "
+				+ " (select row_number()over(order by ref desc, step asc) as rnum,"
+				+ "	seq, id, ref, step, depth, title, content, wdate, del, readcount "
+				+ " from bbs ";
+
+		String searchSql = "";
+		if(choice.equals("title")) {
+			searchSql = " where title like '%" + search + "%' ";
+		}
+		else if(choice.equals("content")) {
+			searchSql = " where content like '%" + search + "%' ";
+		} 
+		else if(choice.equals("writer")) {
+			searchSql = " where id='" + search + "' "; 
+		} 
+		sql += searchSql;
+		
+		sql += 	  " order by ref desc, step asc) a "
+				+ " where rnum between ? and ? ";
+				
+		Connection conn = null;
+		PreparedStatement psmt = null;
+		ResultSet rs = null;
+		
+		// pageNumber(0, 1, 2...)
+		int start, end;
+		start = 1 + 10 * pageNumber;	//  1 11 21 31 41
+		end = 10 + 10 * pageNumber;		// 10 20 30 40 50
+		
+		List<bbsDTO> list = new ArrayList<bbsDTO>();
+				
+		try {
+			conn = DBConnection.getConnection();
+			System.out.println("1/4 getBbsPageList success");
+			
+			psmt = conn.prepareStatement(sql);
+			psmt.setInt(1, start);
+			psmt.setInt(2, end);
+			System.out.println("2/4 getBbsPageList success");
+			
+			rs = psmt.executeQuery();
+			System.out.println("3/4 getBbsPageList success");
+			
+			while(rs.next()) {
+				
+				bbsDTO dto = new bbsDTO(rs.getInt(1), 
+										rs.getString(2), 
+										rs.getInt(3), 
+										rs.getInt(4), 
+										rs.getInt(5), 
+										rs.getString(6), 
+										rs.getString(7), 
+										rs.getString(8), 
+										rs.getInt(9), 
+										rs.getInt(10));
+				
+				list.add(dto);
+			}
+			System.out.println("4/4 getBbsPageList success");
+			
+		} catch (SQLException e) {	
+			System.out.println("getBbsList fail");
+			e.printStackTrace();
+		} finally {
+			DBClose.close(conn, psmt, rs);
+		}
+		
+		return list;		
+	}
 }

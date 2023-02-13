@@ -22,3 +22,17 @@ values('id', (select ifnull(max(ref, 0)+1 from bbs b), 0, 0,
 			'title', 'content', now(), 0, 0));
 			
 select * from bbs;
+
+
+
+
+
+
+select seq, id, ref, step, depth, title, content, wdate, del, readcount
+from
+(select row_number()over(order by ref desc, step asc) as rnum,
+	seq, id, ref, step, depth, title, content, wdate, del, readcount
+from bbs
+
+order by ref desc, step asc) a
+where rnum between 21 and 30;
