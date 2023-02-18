@@ -4,6 +4,22 @@
 <%@page import="dto.MemberDto"%>
 <%@ page language="java" contentType="text/html; charset=UTF-8"
     pageEncoding="UTF-8"%>
+    
+<%!
+// 답글의 화살표 함수
+public String arrow(int depth){
+	String img = "<img src='./arrow.png' width='20px' height='20px' />";	
+	String nbsp = "&nbsp;&nbsp;&nbsp;&nbsp;";
+	
+	String ts = "";
+	for(int i = 0;i < depth; i++){
+		ts += nbsp;
+	}
+	
+	return depth==0?"":ts + img;
+}
+%>    
+
 
 <%
 	MemberDto login = (MemberDto)session.getAttribute("login");
@@ -64,6 +80,13 @@
 		%>
 	
 		<h1>게시판</h1>
+		
+		<br>
+		<a href="calendar.jsp">일정관리</a>
+		<hr>
+		<br>
+		
+		
 		<div align="center">
 			<table border="1">
 				<col width="70">
@@ -91,12 +114,30 @@
 							bbsDTO dto = list.get(i);
 						%>
 						<tr>
-							<th><%=i+1 %></th>
-							<td><%=dto.getTitle() %></td>
-							<td><%=dto.getReadcount() %></td>
-							<td><%=dto.getId()%></td>
-						</tr>
+							<th><%=i + 1 + (pageNumber * 10) %></th>
+							<%
+							if(dto.getDel() == 0) {
+								%>
+							<td>
+								<%=arrow(dto.getDepth()) %>
+								<a href="bbsdetail.jsp?seq=<%=dto.getSeq() %>">
+									<%=dto.getTitle() %>
+								</a>
+							</td>
+							<%
+							} else if(dto.getDel() == 1) {
+							%>
+							<td align = "center">
+								<%=arrow(dto.getDepth()) %>
+								<font color="#ff0000">***이 글은 작성자에 의해 삭제되었습니다***</font>
+							</td>
 						<%
+						}
+					%>
+					<td><%=dto.getReadcount() %></td>
+					<td><%=dto.getId() %></td>
+					</tr>
+					<%
 						}
 					}
 					%>

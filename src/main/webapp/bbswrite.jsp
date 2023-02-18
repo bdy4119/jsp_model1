@@ -28,13 +28,13 @@
 				<tr>
 					<th>id</th>
 					<td>
-						<input type="text" name="id" size="50px" value="<%=login.getId() %>" readonly="readonly">
+						<input type="text" name="id" value="<%=login.getId() %>" readonly="readonly">
 					</td>
 				</tr>
 				<tr>
 					<th>제목</th>
 					<td>
-						<input type="text" name="title" size="50px">
+						<input type="text" name="title">
 					</td>
 				</tr>
 				<tr>

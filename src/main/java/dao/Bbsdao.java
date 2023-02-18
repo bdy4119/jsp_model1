@@ -25,6 +25,8 @@ public class Bbsdao {
 		return dao;
 	}
 	
+	
+	
 	public List<bbsDTO> getBbsList() {
 		
 		String sql = " select seq, id, ref, step, depth, "
@@ -224,6 +226,8 @@ public class Bbsdao {
 	}
 
 	
+	
+	//페이지
 	public List<bbsDTO> getBbsPageList(String choice, String search, int pageNumber) {
 		
 		String sql = " select seq, id, ref, step, depth, title, content, wdate, del, readcount "
@@ -296,4 +300,227 @@ public class Bbsdao {
 		
 		return list;		
 	}
+	
+	
+	
+	public bbsDTO getBbs(int seq) {
+		String sql = " select seq, id, ref, step, depth, "
+				+ " title, content, wdate, del, readcount "
+				+ " from bbs "
+				+ " where seq=? ";
+		
+		Connection conn = null;
+		PreparedStatement psmt = null;
+		ResultSet rs = null;
+		
+		bbsDTO dto = null;
+		
+		try {
+			conn = DBConnection.getConnection();
+			System.out.println("1/3 getBbs success");
+			
+			psmt = conn.prepareStatement(sql);
+			psmt.setInt(1, seq);
+			System.out.println("2/3 getBbs success");
+			
+			rs = psmt.executeQuery();
+			System.out.println("3/3 getBbs success");
+			
+			if(rs.next()) {
+				dto = new bbsDTO(rs.getInt(1),
+								rs.getString(2),
+								rs.getInt(3),
+								rs.getInt(4),
+								rs.getInt(5),
+								rs.getString(6),
+								rs.getString(7),
+								rs.getString(8),
+								rs.getInt(9),
+								rs.getInt(10)
+								);
+			}
+		} catch (SQLException e) {
+			System.out.println("getBbs fail");
+			e.printStackTrace();
+		} finally {
+			DBClose.close(conn, psmt, rs);
+		}
+		return dto;
+	}
+	
+	
+	
+	public boolean answer(int seq, bbsDTO dto) {
+		
+		//update
+		//쿼리문에서 as 꼭 빼먹지 말고 써주기
+		String sql1 = " update bbs "
+				+ " set step=step+1 "
+				+ " where ref=(select ref from(select ref from bbs a where seq=?) A ) "
+				+ "	and step>(select step from(select step from bbs b where seq=?) B ) ";
+	
+		//insert
+		String sql2 = " insert into bbs(id, ref, step, depth, title, content, wdate, del, readcount) "
+				+ " values(?, "
+				+ " (select ref from bbs a where seq=?), "
+				+ "		(select step from bbs b where seq=?)+1, "
+				+ "		(select depth from bbs c where seq=?) + 1, "
+				+ "		?, ?, now(), 0, 0) ";
+		
+		
+		Connection conn = null;
+		PreparedStatement psmt = null;
+		int count1 = 0;
+		int count2 = 0;
+		
+		try {
+			conn = DBConnection.getConnection();
+			//commit(=확정적용) 비활성화 -> commit을 해버리면 rollback안됨
+			conn.setAutoCommit(false);
+			
+			//update
+			psmt = conn.prepareStatement(sql1);
+			psmt.setInt(1, seq);
+			psmt.setInt(2, seq);
+			
+			count1 = psmt.executeUpdate();
+			
+			
+			//psmt 초기화 ->  쿼리가 두개이므로 초기화 해줘야함
+			psmt.clearParameters();
+			
+			
+			//insert
+			psmt = conn.prepareStatement(sql2);
+			psmt.setString(1, dto.getId());
+			psmt.setInt(2, seq);
+			psmt.setInt(3, seq);
+			psmt.setInt(4, seq);
+			psmt.setString(5, dto.getTitle());
+			psmt.setString(6, dto.getContent());
+			
+			count2 = psmt.executeUpdate();
+			
+			conn.commit();
+			
+		} catch (SQLException e) {
+			try {
+				conn.rollback();
+			} catch (SQLException e1) {
+				e1.printStackTrace();
+			}
+			e.printStackTrace();
+		} finally {
+			try {
+				conn.setAutoCommit(true);
+			} catch (SQLException e) {
+				e.printStackTrace();
+			}
+			DBClose.close(conn, psmt, null);
+		}
+		boolean b = false;
+		
+		if(count2 > 0) {
+			return true;
+		} else {
+			return false;
+		}
+		
+	}
+	
+	
+	//수정
+	public boolean updateBbs(int seq, String title, String content) {
+		String sql = "update bbs "
+				+ "set title=?, content=? "
+				+ " where seq=?";
+				
+		Connection conn = null;
+		PreparedStatement psmt = null;
+		int count = 0;
+		
+		
+		try {
+			conn = DBConnection.getConnection();
+			System.out.println("1/3 updateBbs success");
+
+			psmt = conn.prepareStatement(sql);
+			psmt.setString(1, title);
+			psmt.setString(2, content);
+			psmt.setInt(3, seq);
+			System.out.println("2/3 updateBbs success");
+			
+			count = psmt.executeUpdate();
+			
+		} catch (SQLException e) {
+			System.out.println(" updateBbs fail");
+			e.printStackTrace();
+		} finally {
+			DBClose.close(conn, psmt, null);
+		}
+		return count>0?true:false;
+	}
+	
+	
+	
+	
+	//삭제
+	//del변수가 0으로 설정되어 있으므로 1로 바꾸기
+	public boolean deleteBbs(int seq) {
+		String sql = " update bbs "
+				+ " set del = 1 "
+				+ " where seq=? ";
+		
+		Connection conn = null;
+		PreparedStatement psmt = null;
+		int count = 0;
+		
+		
+		try {
+			conn = DBConnection.getConnection();
+			System.out.println("1/3 deleteBbs success");
+			
+			psmt = conn.prepareStatement(sql);
+			psmt.setInt(1, seq);
+			System.out.println("2/3 deleteBbs success");
+			
+			count = psmt.executeUpdate();
+			System.out.println("3/3 deleteBbs success");
+			
+		} catch (SQLException e) {
+			System.out.println("deleteBbs fail");
+			e.printStackTrace();
+		} finally {
+			DBClose.close(conn, psmt, null);
+		}
+		
+		return count>0?true:false;
+	}
+	
+	
+	
+	public void readcount(int seq) {
+		String sql = " update bbs "
+				+ " set readcount=readcount+1 "
+				+ " where seq=? ";
+		
+		Connection conn = null;
+		PreparedStatement psmt = null;
+		
+		try {
+			conn = DBConnection.getConnection();
+			
+			psmt = conn.prepareStatement(sql);
+			psmt.setInt(1,  seq);
+			
+			psmt.execute();
+		} catch (SQLException e) {
+			e.printStackTrace();
+		} finally {
+			DBClose.close(conn, psmt, null);
+		}
+		
+	}
+	
+	
 }

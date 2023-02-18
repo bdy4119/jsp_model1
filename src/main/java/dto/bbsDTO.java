@@ -10,7 +10,7 @@ public class bbsDTO implements Serializable {
 	//답글용 변수들
 	private int ref;		//sequence 그룹번호(글번호)
 	private int step;		//		   행번호
-	private int depth;		//		   깊이
+	private int depth;		//		   깊이번호
 	
 	private String title;	//글제목
 	private String content; //글내용

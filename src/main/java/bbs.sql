@@ -36,3 +36,21 @@ from bbs
 
 order by ref desc, step asc) a
 where rnum between 21 and 30;
+
+
+
+
+
+
+
+update bbs
+set step=step+1
+were ref=(select ref from bbs where seq=?)
+	and step>(select step from bbs where seq=?)
+	
+
+insert into bbs(id, ref, step, depth, title, content, wdate, del , readcount);
+values(?, (select ref from bbs where seq=?),
+		(select step from bbs where seq=?)+1,
+		(select depth from bbs where seq=?) + 1, 
+		?, ?, now(), 0, 0);
